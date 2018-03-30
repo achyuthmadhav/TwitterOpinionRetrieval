@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<html ng-app="map">
+
+<body>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script src = "https://ajax.googleapis.com/ajax/libs/angularjs/1.3.3/angular.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.0/js/bootstrap.min.js"></script>
+    <script src="http://d3js.org/d3.v3.min.js"></script>
+    <script src="http://d3js.org/topojson.v1.min.js"></script>
+    <script src="datamaps.world.hires.min.js"></script>
+    <div id="map_bombs" style="height: 600px; width: 900px;" ng-controller="mapController"></div>
+    <script>
+
+        var app = angular.module('map', []);
+        app.controller("mapController",function($window){
+
+        var returnJson  = localStorage["data"];
+        //console.log(returnJson);
+        var t = JSON.parse(returnJson);
+        console.log(t);
+        var bombMap = new Datamap({
+    element: document.getElementById('map_bombs'),
+    scope: 'world',
+    geographyConfig: {
+        popupOnHover: false,
+        highlightOnHover: false
+    },
+    fills: {
+        'STRONGPOSITIVE': '#28B463',
+        'WEAKPOSITIVE': '#82E0AA',
+        'STRONGNEGATIVE': '#CB4335',
+        'WEAKNEGATIVE': '#F1948A',
+        'NEUTRAL':'#D5DBDB',
+        'WHITE':'#ffffff',
+        defaultFill: '#EDDC4E'
+    }
+    });
+    var bombs = [];
+    for(var i = 0; i < t.length; i++) {
+        var obj = t[i];
+        var twt = {}
+        twt.name = obj.name;
+        twt.yield = obj.tweetBody;
+        twt.radius = 10;
+        switch(obj.sentiment) {
+            case 4: twt.fillKey = 'STRONGPOSITIVE'; break;
+            case 3: twt.fillKey = 'WEAKPOSITIVE'; break;
+            case 2: twt.fillKey = 'NEUTRAL'; break;
+            case 1: twt.fillKey = 'WEAKNEGATIVE'; break;
+            case 0: twt.fillKey = 'STRONGNEGATIVE'; break;
+            default: twt.fillKey = 'WHITE'; break;
+        }
+        twt.date = obj.created;
+        twt.location = obj.location;
+        twt.latitude = obj.latitude;
+        twt.longitude = obj.longitude;
+        bombs.push(twt);
+    }
+    console.log(bombs);
+    //  var bombs = [{
+    //     name: 'Joe 4',
+    //     radius: 25,
+    //     yield: 400,
+    //     country: 'USSR',
+    //     fillKey: 'RUS',
+    //     significance: 'First fusion weapon test by the USSR (not "staged")',
+    //     date: '1953-08-12',
+    //     latitude: 50.07,
+    //     longitude: 78.43
+    //   },{
+    //     name: 'RDS-37',
+    //     radius: 40,
+    //     yield: 1600,
+    //     country: 'USSR',
+    //     fillKey: 'RUS',
+    //     significance: 'First "staged" thermonuclear weapon test by the USSR (deployable)',
+    //     date: '1955-11-22',
+    //     latitude: 50.07,
+    //     longitude: 78.43
+
+    //   },{
+    //     name: 'Tsar Bomba',
+    //     radius: 75,
+    //     yield: 50000,
+    //     country: 'USSR',
+    //     fillKey: 'RUS',
+    //     significance: 'Largest thermonuclear weapon ever tested—scaled down from its initial 100 Mt design by 50%',
+    //     date: '1961-10-31',
+    //     latitude: 73.482,
+    //     longitude: 54.5854
+    //   }
+    // ];
+//draw bubbles for bombs
+bombMap.bubbles(bombs, {
+    popupTemplate: function (geo, data) {
+            return ['<div class="hoverinfo">' +  data.name,
+            '<br/>Tweet: ' +  data.yield,
+            '<br/>Location: ' +  data.location + '',
+            '<br/>Date: ' +  data.date + '',
+            '</div>'].join('');
+    }
+});
+
+
+        })
+
+        
+    </script>
+</body>
+
+</html>
